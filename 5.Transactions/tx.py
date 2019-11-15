@@ -119,7 +119,8 @@ class Tx:
         ouputs  = []
         for _ in  range(num_ouputs):
             ouputs.append(TxOut.parse(s))
-        return cls(version, inputs, ouputs, None, testnet=testnet)
+        locktime = little_endian_to_int(s.read(4))
+        return cls(version, inputs, ouputs, locktime, testnet=testnet)
         # s.read(n) will return n bytes
         # version is an integer in 4 bytes, little-endian
         # num_inputs is a varint, use read_varint(s)
@@ -144,10 +145,17 @@ class Tx:
         return result
     # end::source6[]
 
-    def fee(self):
+    def fee(self, testnet=False):
         '''Returns the fee of this transaction in satoshi'''
         # initialize input sum and output sum
         # use TxIn.value() to sum up the input amounts
+        input_sum, output_sum = 0, 0
+        for tx_in in self.tx_ins:
+            input_sum += tx_in.value(testnet=testnet)
+        
+        for tx_out in self.tx_outs:
+            output_sum += tx_out.amount
+        return input_sum - output_sum
         # use TxOut.amount to sum up the output amounts
         # fee is input sum - output sum
         raise NotImplementedError
