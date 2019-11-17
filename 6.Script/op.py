@@ -667,6 +667,20 @@ def op_hash256(stack):
 
 def op_checksig(stack, z):
     # check that there are at least 2 elements on the stack
+    if len (stack) < 2:
+        return False
+    sec_pubkey = stack.pop()
+    der_signature = stack.pop()[:-1]
+    try:
+        point = S256Point.parse(sec_pubkey)
+        sig = Signature.parse(der_signature)
+    except (ValueError, SyntaxError) as e:
+        return False
+    if point.verify(z, sig):
+        stack.append(encode_num(1))
+    else:
+        stack.append(encode_num(0))
+    return True
     # the top element of the stack is the SEC pubkey
     # the next element of the stack is the DER signature
     # take off the last byte of the signature as that's the hash_type
