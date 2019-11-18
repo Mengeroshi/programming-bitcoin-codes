@@ -188,11 +188,11 @@ class Tx:
 
     def verify_input(self, input_index):
         '''Returns whether the input has a valid signature'''
-        # get the relevant input
-        # grab the previous ScriptPubKey
-        # get the signature hash (z)
-        # combine the current ScriptSig and the previous ScriptPubKey
-        # evaluate the combined script
+        tx_in = self.tx_ins[input_index]
+        script_pubkey = tx_in.script_pubkey(testnet=self.testnet)
+        z = self.sig_hash(input_index)
+        combined = tx_in.script_sig + script_pubkey
+        return combined.evaluate(z)
         raise NotImplementedError
 
     # tag::source2[]
@@ -207,13 +207,12 @@ class Tx:
     # end::source2[]
 
     def sign_input(self, input_index, private_key):
-        # get the signature hash (z)
-        # get der signature of z from private key
-        # append the SIGHASH_ALL to der (use SIGHASH_ALL.to_bytes(1, 'big'))
-        # calculate the sec
-        # initialize a new script with [sig, sec] as the cmds
-        # change input's script_sig to new script
-        # return whether sig is valid using self.verify_input
+        z = self.sig_hash(input_index)
+        der = private_key.sign(z).der()
+        sig = der + SIGHASH_ALL.to_bytes(1, 'big')
+        sec = private_key.point.sec()
+        self.tx_ins[input_index].script_sig = Script([sig, sec])
+        return self.verify_input(input_index)
         raise NotImplementedError
 
 
