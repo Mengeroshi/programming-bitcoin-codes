@@ -172,7 +172,7 @@ class Tx:
                 ).serialize()
             else:
                 s += TxIn(
-                    prev_txtx_in.prev_tx,
+                    prev_tx=tx_in.prev_tx,
                     prev_index=tx_in.prev_index,
                     sequence =tx_in.sequence,
                 ).serialize()
