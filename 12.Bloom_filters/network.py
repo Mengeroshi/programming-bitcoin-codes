@@ -312,10 +312,11 @@ class GetDataMessage:
     # end::source1[]
 
     def serialize(self):
-        # start with the number of items as a varint
-        # loop through each tuple (data_type, identifier) in self.data
-            # data type is 4 bytes Little-Endian
-            # identifier needs to be in Little-Endian
+        result = encode_varint(len(self.data))
+        for data_type, identifier in self.data:
+            result += int_to_little_endian(data_type, 4)
+            result += identifier[::-1]
+        return result
         raise NotImplementedError
 
 
